@@ -385,20 +385,20 @@
       // Plain English steps
       const plainSteps = [
         {
-          title: 'Does it end in "-er"?',
-          body: 'Does <b>"' + raw + '"</b> end in <b>"-er"</b>?<br>→ <b>Yes:</b> continue.<br>→ <b>No:</b> stop — this is not a first-group verb.'
+          title: 'Se termine-t-il en « -er » ?',
+          body: 'Est-ce que <b>« ' + raw + ' »</b> se termine par <b>« -er »</b> ?<br>→ <b>Oui :</b> on continue.<br>→ <b>Non :</b> on s\'arrête — ce n\'est pas un verbe du premier groupe.'
         },
         {
-          title: 'Is it a regular verb?',
-          body: 'Regular -ER verbs all follow the same pattern. If the verb is irregular (like <i>aller</i>), the rules below won\'t apply. We assume <b>"' + raw + '"</b> is regular and continue.'
+          title: 'Est-ce un verbe régulier ?',
+          body: 'Les verbes réguliers en -ER suivent tous le même modèle. Si le verbe est irrégulier (comme <i>aller</i>), les règles ci-dessous ne s\'appliquent pas. On suppose que <b>« ' + raw + ' »</b> est régulier et on continue.'
         },
         {
-          title: 'Find the stem',
-          body: 'Remove <b>"-er"</b> from the end. What\'s left is the stem — the unchanged base that every conjugated form is built on: <span class="hi-blue">"' + stem + '"</span>.'
+          title: 'Trouver le radical',
+          body: 'On supprime <b>« -er »</b> de la fin. Ce qui reste est le radical — la base fixe sur laquelle chaque forme conjuguée est construite : <span class="hi-blue">« ' + stem + ' »</span>.'
         },
         {
-          title: 'For each pronoun, add its ending',
-          body: 'Each pronoun has one fixed ending. Add it to the stem:<br>' +
+          title: 'Pour chaque pronom, ajouter sa terminaison',
+          body: 'Chaque pronom a une terminaison fixe. On l\'ajoute au radical :<br>' +
             PRONOUNS.map((p, i) => '<span class="hi-blue">' + stem + '</span> + <span class="hi-green">' + ENDINGS[i] + '</span> → <b>' + stem + ENDINGS[i] + '</b>').join('<br>')
         },
       ];
