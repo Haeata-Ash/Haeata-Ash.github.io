@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Conjugateur -ER</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --panel: #161616;
+      --border: #2a2a2a;
+      --text: #e0e0e0;
+      --dim: #666;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --blue: #60a5fa;
+      --red: #f87171;
+      --mono: 'IBM Plex Mono', monospace;
+      --sans: 'IBM Plex Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+    }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--green);
+      margin-bottom: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--dim);
+      margin-bottom: 36px;
+      letter-spacing: 0.05em;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 36px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-right: none;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 1rem;
+      padding: 11px 16px;
+      outline: none;
+      border-radius: 3px 0 0 3px;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus { border-color: var(--green); }
+    input[type="text"]::placeholder { color: #444; }
+
+    button {
+      background: var(--green);
+      color: #000;
+      border: none;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 11px 18px;
+      cursor: pointer;
+      border-radius: 0 3px 3px 0;
+      letter-spacing: 0.05em;
+      transition: opacity 0.15s;
+    }
+    button:hover { opacity: 0.85; }
+
+    .error {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--red);
+      margin-top: -24px;
+      margin-bottom: 24px;
+      min-height: 1em;
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+      max-width: 1260px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s, transform 0.4s;
+      pointer-events: none;
+    }
+    .columns.visible {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--dim);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: #111;
+    }
+
+    .steps {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .step.show { opacity: 1; transform: none; }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      background: #1c1c1c;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .step-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--dim);
+      min-width: 18px;
+    }
+
+    .step-label {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--yellow);
+    }
+
+    .step-body {
+      padding: 8px 12px;
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      line-height: 1.8;
+    }
+
+    .kw   { color: #c084fc; }
+    .str  { color: var(--green); }
+    .var  { color: var(--blue); }
+    .op   { color: var(--dim); }
+    .val  { color: var(--yellow); }
+    .cm   { color: #444; font-style: italic; }
+
+    .output { padding: 16px; }
+
+    .conj-table { width: 100%; border-collapse: collapse; }
+
+    .conj-table tr {
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .conj-table tr:last-child { border-bottom: none; }
+    .conj-table tr.show { opacity: 1; }
+
+    .conj-table td {
+      padding: 10px 4px;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+    }
+
+    .conj-table .pronoun { color: var(--dim); width: 110px; }
+    .conj-table .stem-part { color: var(--blue); }
+    .conj-table .ending-part { color: var(--green); }
+    .arrow { color: var(--dim); padding: 0 8px; }
+
+    .plain-steps {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .plain-step {
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .plain-step.show { opacity: 1; transform: none; }
+
+    .plain-step-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      background: #1c1c1c;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .plain-step-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--dim);
+      min-width: 18px;
+    }
+
+    .plain-step-title {
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--yellow);
+      letter-spacing: 0.02em;
+    }
+
+    .plain-step-body {
+      padding: 10px 14px;
+      font-family: var(--sans);
+      font-size: 0.83rem;
+      font-weight: 300;
+      line-height: 1.65;
+      color: #c8c8c8;
+    }
+
+    .plain-step-body b { color: var(--text); font-weight: 600; }
+    .plain-step-body .hi-blue { color: var(--blue); font-weight: 600; }
+    .plain-step-body .hi-green { color: var(--green); font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <h1>// conjugateur</h1>
+  <p class="subtitle">présent de l'indicatif &middot; verbes réguliers -ER</p>
+
+  <div class="input-row">
+    <input type="text" id="verbInput" placeholder="parler, aimer, danser…" autocomplete="off" spellcheck="false"/>
+    <button onclick="run()">run</button>
+  </div>
+  <div class="error" id="err"></div>
+
+  <div class="columns" id="columns">
+    <div class="panel">
+      <div class="panel-header">// étapes · process</div>
+      <div class="steps" id="steps"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">// en clair · plain English</div>
+      <div class="plain-steps" id="plain"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">// résultat · output</div>
+      <div class="output">
+        <table class="conj-table" id="output"></table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('verbInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') run();
+    });
+
+    const PRONOUNS = ['je', 'tu', 'il / elle', 'nous', 'vous', 'ils / elles'];
+    const ENDINGS  = ['e', 'es', 'e', 'ons', 'ez', 'ent'];
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    async function run() {
+      const raw = document.getElementById('verbInput').value.trim().toLowerCase();
+      const err = document.getElementById('err');
+      const cols = document.getElementById('columns');
+
+      err.textContent = '';
+      cols.classList.remove('visible');
+      document.getElementById('steps').innerHTML = '';
+      document.getElementById('plain').innerHTML = '';
+      document.getElementById('output').innerHTML = '';
+
+      if (!raw) { err.textContent = 'Entrez un verbe.'; return; }
+      if (!raw.endsWith('er') || raw.length < 3) {
+        err.textContent = '"' + raw + '" n\'est pas un verbe en -ER.';
+        return;
+      }
+
+      const stem = raw.slice(0, -2);
+      cols.classList.add('visible');
+
+      const steps = [
+        {
+          label: 'input',
+          lines: [
+            '<span class="kw">const</span> <span class="var">verb</span> <span class="op">=</span> <span class="str">"' + raw + '"</span>',
+          ]
+        },
+        {
+          label: 'validate · ends with -er ?',
+          lines: [
+            '<span class="var">verb</span><span class="op">.</span><span class="var">endsWith</span><span class="op">(</span><span class="str">"-er"</span><span class="op">)</span>',
+            '<span class="op">→</span> <span class="str">true</span> <span class="cm">// ✓ premier groupe</span>',
+          ]
+        },
+        {
+          label: 'extract stem · retirer -er',
+          lines: [
+            '<span class="kw">const</span> <span class="var">stem</span> <span class="op">=</span> <span class="var">verb</span><span class="op">.</span><span class="var">slice</span><span class="op">(</span><span class="val">0</span><span class="op">, -</span><span class="val">2</span><span class="op">)</span>',
+            '<span class="op">→</span> <span class="str">"' + stem + '"</span>',
+          ]
+        },
+        {
+          label: 'endings · terminaisons',
+          lines: [
+            '<span class="kw">const</span> <span class="var">endings</span> <span class="op">=</span> <span class="op">[</span>',
+            '&nbsp;&nbsp;<span class="str">"e"</span><span class="op">,</span> <span class="str">"es"</span><span class="op">,</span> <span class="str">"e"</span><span class="op">,</span>',
+            '&nbsp;&nbsp;<span class="str">"ons"</span><span class="op">,</span> <span class="str">"ez"</span><span class="op">,</span> <span class="str">"ent"</span>',
+            '<span class="op">]</span>',
+          ]
+        },
+        {
+          label: 'conjugate · stem + ending',
+          lines: [
+            '<span class="var">endings</span><span class="op">.</span><span class="var">map</span><span class="op">(</span><span class="var">e</span> <span class="op">=></span> <span class="var">stem</span> <span class="op">+</span> <span class="var">e</span><span class="op">)</span>',
+          ].concat(ENDINGS.map(e =>
+            '<span class="op">→</span> <span class="var">"' + stem + '"</span> <span class="op">+</span> <span class="str">"' + e + '"</span> <span class="op">=</span> <span class="str">"' + stem + e + '"</span>'
+          ))
+        },
+      ];
+
+      const stepsEl = document.getElementById('steps');
+      for (let i = 0; i < steps.length; i++) {
+        const s = steps[i];
+        const div = document.createElement('div');
+        div.className = 'step';
+        div.innerHTML =
+          '<div class="step-header">' +
+            '<span class="step-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+            '<span class="step-label">' + s.label + '</span>' +
+          '</div>' +
+          '<div class="step-body">' +
+            s.lines.map(l => '<div>' + l + '</div>').join('') +
+          '</div>';
+        stepsEl.appendChild(div);
+        await delay(60);
+        div.classList.add('show');
+        await delay(140);
+      }
+
+      // Plain English steps
+      const plainSteps = [
+        {
+          title: 'Does it end in "-er"?',
+          body: 'Does <b>"' + raw + '"</b> end in <b>"-er"</b>?<br>→ <b>Yes:</b> continue.<br>→ <b>No:</b> stop — this is not a first-group verb.'
+        },
+        {
+          title: 'Is it a regular verb?',
+          body: 'Regular -ER verbs all follow the same pattern. If the verb is irregular (like <i>aller</i>), the rules below won\'t apply. We assume <b>"' + raw + '"</b> is regular and continue.'
+        },
+        {
+          title: 'Find the stem',
+          body: 'Remove <b>"-er"</b> from the end. What\'s left is the stem — the unchanged base that every conjugated form is built on: <span class="hi-blue">"' + stem + '"</span>.'
+        },
+        {
+          title: 'For each pronoun, add its ending',
+          body: 'Each pronoun has one fixed ending. Add it to the stem:<br>' +
+            PRONOUNS.map((p, i) => '<span class="hi-blue">' + stem + '</span> + <span class="hi-green">' + ENDINGS[i] + '</span> → <b>' + stem + ENDINGS[i] + '</b>').join('<br>')
+        },
+      ];
+
+      const plainEl = document.getElementById('plain');
+      for (let i = 0; i < plainSteps.length; i++) {
+        const s = plainSteps[i];
+        const div = document.createElement('div');
+        div.className = 'plain-step';
+        div.innerHTML =
+          '<div class="plain-step-header">' +
+            '<span class="plain-step-num">' + String(i + 1).padStart(2, '0') + '</span>' +
+            '<span class="plain-step-title">' + s.title + '</span>' +
+          '</div>' +
+          '<div class="plain-step-body">' + s.body + '</div>';
+        plainEl.appendChild(div);
+        await delay(60);
+        div.classList.add('show');
+        await delay(140);
+      }
+
+      await delay(80);
+      const table = document.getElementById('output');
+      for (let i = 0; i < PRONOUNS.length; i++) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="pronoun">' + PRONOUNS[i] + '</td>' +
+          '<td class="arrow">→</td>' +
+          '<td><span class="stem-part">' + stem + '</span><span class="ending-part">' + ENDINGS[i] + '</span></td>';
+        table.appendChild(tr);
+        await delay(80);
+        tr.classList.add('show');
+      }
+    }
+  </script>
+</body>
+</html>
